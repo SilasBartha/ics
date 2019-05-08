@@ -28,6 +28,8 @@ public class ArrayMap {
 				 * Recall: Java handles 2D arrays by accessing the ROW first, then the COL.
 				 */
  				if(SIZE > 8) arr[2][8] = 99;
+				
+				//The rest of the numbers are 0 by default.
 			}
 		}
 	}
