@@ -29,12 +29,12 @@ public class TicTacToe {
 	Color bgColor = new Color(250,235,215);
 	
 	//Spaces dimensional array
-	int gridNum = 3;
-	int[][] spaces;
+	static final int GRID_NUM = 3;
+	int[][] spaces = new int[GRID_NUM][GRID_NUM];
 	//Board Dimensions
-	int boardSize = 600;
-	int gridSize;
-	double offset;
+	static final int BOARD_SIZE = 600;
+	static final int GRID_SIZE = 580/GRID_NUM;
+	static final double OFFSET = (((GRID_NUM*GRID_SIZE)/(double)BOARD_SIZE)*15);;
 	//Constants for claiming space
 	static final int EMPTY = 0;
 	static final int XSPACE = 1;
@@ -54,8 +54,6 @@ public class TicTacToe {
 	Font h1;
 	//Buttons
 	Button resetButton = new Button(); 
-	Button incButton = new Button();
-	Button decButton = new Button();
 	Button startButton = new Button();
 	
 	//Main
@@ -67,8 +65,6 @@ public class TicTacToe {
 	TicTacToe(){
 		//setup Window, fonts, sounds, etc.
 		setup();
-		//Menu, Player Sets game vars
-		menu();
 		//Main loop
 		while(true){
 			//Draw graphics
@@ -96,33 +92,8 @@ public class TicTacToe {
 		//Enable Mouse
 		gc.enableMouse();
 		gc.enableMouseMotion();
-	}
-	
-	void menu(){
-		while(true){
-			synchronized(gc){
-				gc.clear();
-				drawBoard(false);
-				drawTitle();
-				drawSizeControls();
-				startButton.draw(h1, gc, "Begin", carve, wood, 150, 200, 5, true, true);
-				if(decButton.isClicked(gc)){
-					gridNum--;
-				}
-				if(incButton.isClicked(gc)){
-					gridNum++;
-				}
-				if(startButton.isClicked(gc)){
-					spaces = new int[gridNum][gridNum];
-					gridSize = 580/gridNum;
-					offset = (((gridNum*gridSize)/(double)boardSize)*15);
-					//Place Grid Squares
-					createGrid();
-					break;
-				}
-			}
-			gc.sleep(1);
-		}
+		//Place Grid Squares
+		createGrid();
 	}
 	
 	//Draw
@@ -134,8 +105,8 @@ public class TicTacToe {
 		synchronized(gc){
 			//Clear Screen
 			gc.clear();
-			//Draw Board and Info Bar
-			drawBoard(true);
+			//Draw Board
+			drawBoard();
 			//Drawing for During Game
 			if(!gameOver){
 				drawGameObjects();
@@ -160,49 +131,45 @@ public class TicTacToe {
 	
 	//Grid Drawing
 	void createGrid(){
-		for(int row = 0; row < gridNum; row++){
-			for(int column = 0; column < gridNum; column++){
-				int s = EMPTY;
-				spaces[row][column] = s;
+		for(int row = 0; row < GRID_NUM; row++){
+			for(int column = 0; column < GRID_NUM; column++){
+				spaces[column][row] = EMPTY;
 			}
 		}
 	}
 	
 	//Board Drawing
-	void drawBoard(boolean grid){
+	void drawBoard(){
 		gc.setStroke(5);
 		//Add Faux Depth
 		gc.setColor(carve);
 		gc.fillRoundRect(25,25,750,60,25,25);
-		gc.fillRoundRect(100, 100, boardSize, boardSize+10,25,25);
+		gc.fillRoundRect(100, 100, BOARD_SIZE, BOARD_SIZE+10,25,25);
 		//Top
 		gc.setColor(wood);
 		gc.fillRoundRect(25,25,750,50,25,25);
-		gc.fillRoundRect(100, 100, boardSize, boardSize,25,25);
-		//Draw Grid
-		if(grid){
-			drawGrid();
-		}
+		gc.fillRoundRect(100, 100, BOARD_SIZE, BOARD_SIZE,25,25);
+		drawGrid();
 	}
 
 	void drawGrid(){
 		gc.setColor(carve);
-		for(int row = 0; row < gridNum; row++){
-			for(int column = 0; column < gridNum; column++){
-				gc.drawRoundRect(100+(int)offset+(gridSize*column), 100+(int)offset+(gridSize*row), gridSize, gridSize,5,5);
+		for(int row = 0; row < GRID_NUM; row++){
+			for(int column = 0; column < GRID_NUM; column++){
+				gc.drawRoundRect(100+(int)OFFSET+(GRID_SIZE*column), 100+(int)OFFSET+(GRID_SIZE*row), GRID_SIZE, GRID_SIZE,5,5);
 				//Draw X or O or nothing, based on occupied state.
 				switch(spaces[row][column]){
 				//P2
 				case OSPACE:
-					gc.drawOval(100+(int)offset+(gridSize*column)+(int)offset, 100+(int)offset+(gridSize*row)+(int)offset, gridSize-(int)(offset*2), gridSize-(int)(offset*2));
+					gc.drawOval(100+(int)OFFSET+(GRID_SIZE*column)+(int)OFFSET, 100+(int)OFFSET+(GRID_SIZE*row)+(int)OFFSET, GRID_SIZE-(int)(OFFSET*2), GRID_SIZE-(int)(OFFSET*2));
 					break;
 				//Empty
 				case EMPTY:
 					break;
 				//P1
 				case XSPACE:
-					gc.drawLine(100+(int)offset+(gridSize*column)+(int)offset, 100+(int)offset+(gridSize*row)+(int)offset, 100+(int)offset+(gridSize*column)+gridSize-(int)offset, 100+(int)offset+(gridSize*column)+gridSize-(int)offset);
-					gc.drawLine( 100+(int)offset+(gridSize*column)+(int)offset, 100+(int)offset+(gridSize*column)+gridSize-(int)offset, 100+(int)offset+(gridSize*column)+gridSize-(int)offset, 100+(int)offset+(gridSize*row)+(int)offset);
+					gc.drawLine(100+(GRID_SIZE*column)+2*(int)OFFSET, 100+(GRID_SIZE*row)+2*(int)OFFSET, 100+(GRID_SIZE*column)+GRID_SIZE, 100+(GRID_SIZE*row)+GRID_SIZE);
+					gc.drawLine(100+(GRID_SIZE*column)+GRID_SIZE, 100+(GRID_SIZE*row)+2*(int)OFFSET, 100+(GRID_SIZE*column)+2*(int)OFFSET, 100+(GRID_SIZE*row)+GRID_SIZE);
 					break;
 				}
 			}
@@ -225,18 +192,18 @@ public class TicTacToe {
 
 	//Draw Player 1's Potential Selection
 	void drawPlayer1Turn(){
-		for(int row = 0; row < gridNum; row++){
-			for(int column = 0; column < gridNum; column++){
+		for(int row = 0; row < GRID_NUM; row++){
+			for(int column = 0; column < GRID_NUM; column++){
 				//Green X if available, red if occupied
-				Rectangle rect = new Rectangle(100+(int)offset+(gridSize*column), 100+(int)offset+(gridSize*row), gridSize, gridSize);
+				Rectangle rect = new Rectangle(100+(int)OFFSET+(GRID_SIZE*column), 100+(int)OFFSET+(GRID_SIZE*row), GRID_SIZE, GRID_SIZE);
 				if(rect.contains(m)){
 					if(spaces[row][column] == EMPTY){
 						gc.setColor(Color.GREEN);
 					}else{
 						gc.setColor(Color.RED);
 					}
-					gc.drawLine(m.x-(gridSize-30)/2, m.y-(gridSize-30)/2, m.x+(gridSize-30)/2, m.y+(gridSize-30)/2);
-					gc.drawLine(m.x-(gridSize-30)/2, m.y+(gridSize-30)/2,  m.x+(gridSize-30)/2, m.y-(gridSize-30)/2);
+					gc.drawLine(m.x-(GRID_SIZE-30)/2, m.y-(GRID_SIZE-30)/2, m.x+(GRID_SIZE-30)/2, m.y+(GRID_SIZE-30)/2);
+					gc.drawLine(m.x-(GRID_SIZE-30)/2, m.y+(GRID_SIZE-30)/2,  m.x+(GRID_SIZE-30)/2, m.y-(GRID_SIZE-30)/2);
 				}
 			}
 		}
@@ -244,17 +211,17 @@ public class TicTacToe {
 	
 	//Draw Player 2's Potential Selection
 	void drawPlayer2Turn(){
-		for(int row = 0; row < gridNum; row++){
-			for(int column = 0; column < gridNum; column++){
+		for(int row = 0; row < GRID_NUM; row++){
+			for(int column = 0; column < GRID_NUM; column++){
 				//Green X if available, red if occupied
-				Rectangle rect = new Rectangle(100+(int)offset+(gridSize*column), 100+(int)offset+(gridSize*row), gridSize, gridSize);
+				Rectangle rect = new Rectangle(100+(int)OFFSET+(GRID_SIZE*column), 100+(int)OFFSET+(GRID_SIZE*row), GRID_SIZE, GRID_SIZE);
 				if(rect.contains(m)){
 					if(spaces[row][column] == EMPTY){
 						gc.setColor(Color.GREEN);
 					}else{
 						gc.setColor(Color.RED);
 					}
-					gc.drawOval(m.x-(gridSize-30)/2, m.y-(gridSize-30)/2, gridSize-(int)(offset*2), gridSize-(int)(offset*2));
+					gc.drawOval(m.x-(GRID_SIZE-30)/2, m.y-(GRID_SIZE-30)/2, GRID_SIZE-(int)(OFFSET*2), GRID_SIZE-(int)(OFFSET*2));
 				}
 			}
 		}
@@ -286,15 +253,6 @@ public class TicTacToe {
 		gc.setColor(carve);
 		gc.drawString("Tic Tac Toe", 325, 60);
 	}
-
-	//Draw Grid Size Controls
-	void drawSizeControls(){
-		gc.setFont(h1);
-		gc.setColor(carve);
-		gc.drawString("Grid Size: "+gridNum+"x"+gridNum, 150, 175);
-		decButton.draw(h1, gc, "<", carve, wood, 115, 150, 5, true, true);
-		incButton.draw(h1, gc, ">", carve, wood, 400, 150, 5, true, true);
-	}
 	
 	//Draw Game Objects (Shadow, dialog box, etc)
 	void drawGameOver(){
@@ -311,7 +269,7 @@ public class TicTacToe {
 		//Draw Shadow over screen
 				gc.setColor(shadow);
 				gc.fillRect(0, 0, vs, vs);
-				gc.setStroke(gridSize);
+				gc.setStroke(GRID_SIZE);
 	}
 
 	//Draw Highlight Over Winning Combinations
@@ -327,26 +285,44 @@ public class TicTacToe {
 	
 	//Check Which Columns to Highlight
 	void columnHighlight(){
-		for(int column = 0; column < gridNum; column++){
+		for(int column = 0; column < GRID_NUM; column++){
 			int sum = 0;
-			for(int i = 0; i<gridNum; i++){
+			for(int i = 0; i<GRID_NUM; i++){
 				sum += spaces[i][column];
 			}
 			if(Math.abs(sum) == 3){
-				gc.drawLine(100+column*gridSize+gridSize/2, 100+column*gridSize+gridSize/2, 100+((gridNum-1)*column*gridSize+gridSize/2), 100+((gridNum-1)*column*gridSize+gridSize/2));
+				gc.drawLine(
+					//X1
+					100+(int)OFFSET+column*GRID_SIZE+GRID_SIZE/2,
+					//Y1
+					100+(int)OFFSET+GRID_SIZE/2,
+					//X2
+					100+(int)OFFSET+column*GRID_SIZE+GRID_SIZE/2,
+					//Y2
+					100+(int)OFFSET+GRID_SIZE*GRID_NUM-GRID_SIZE/2
+				);
 			}
 		}
 	}
 
 	//Check Which Rows to Highlight
 	void rowHighlight(){
-		for(int row = 0; row < gridNum; row++){
+		for(int row = 0; row < GRID_NUM; row++){
 			int sum = 0;
-			for(int i = 0; i<gridNum; i++){
+			for(int i = 0; i<GRID_NUM; i++){
 				sum += spaces[row][i];
 			}
 			if(Math.abs(sum) == 3){
-				gc.drawLine(100+row*gridSize+gridSize/2, 100+row*gridSize+gridSize/2, 100+((gridNum-1)*row*gridSize+gridSize/2), 100+((gridNum-1)*row*gridSize+gridSize/2));
+				gc.drawLine(
+						//X1
+						100+(int)OFFSET+GRID_SIZE/2,
+						//Y1
+						100+(int)OFFSET+row*GRID_SIZE+GRID_SIZE/2,
+						//X2
+						100+(int)OFFSET+GRID_SIZE*GRID_NUM-GRID_SIZE/2,
+						//Y2
+						100+(int)OFFSET+row*GRID_SIZE+GRID_SIZE/2
+				);
 			}
 		}
 	}
@@ -355,19 +331,37 @@ public class TicTacToe {
 	void diagonalHighlight(){
 		//Top to bottom
 				int sum = 0;
-				for(int i = 0; i<gridNum; i++) {
+				for(int i = 0; i<GRID_NUM; i++) {
 					sum += spaces[i][i];
 				}
 				if(Math.abs(sum) == 3){
-					gc.drawLine(100+gridSize/2, 100+gridSize/2, 100+gridSize*gridNum-1+gridSize/2, 100+gridSize*gridNum-1+gridSize/2);
+					gc.drawLine(
+							//X1
+							100+(int)OFFSET+GRID_SIZE/2,
+							//Y1
+							100+(int)OFFSET+GRID_SIZE/2,
+							//X2
+							100+(int)OFFSET+GRID_SIZE*GRID_NUM-GRID_SIZE/2,
+							//Y2
+							100+(int)OFFSET+GRID_SIZE*GRID_NUM-GRID_SIZE/2
+					);
 				}
 				//Bottom to top
 				sum = 0;
-				for(int i = 0; i<gridNum; i++) {
-					sum += spaces[i][gridNum-1-i];
+				for(int i = 0; i<GRID_NUM; i++) {
+					sum += spaces[i][GRID_NUM-1-i];
 				}
 				if(Math.abs(sum) == 3){
-					gc.drawLine(100+gridSize*gridNum-1+gridSize/2, 100+gridSize*gridNum-1+gridSize/2, 100+gridSize/2, 100+gridSize/2);
+					gc.drawLine(
+							//X1
+							100+(int)OFFSET+GRID_SIZE*GRID_NUM-GRID_SIZE/2,
+							//Y1
+							100+(int)OFFSET+GRID_SIZE/2,
+							//X2
+							100+(int)OFFSET+GRID_SIZE/2,
+							//Y2
+							100+(int)OFFSET+GRID_SIZE*GRID_NUM-GRID_SIZE/2
+					);
 				}
 	}
 
@@ -431,8 +425,8 @@ public class TicTacToe {
 	//Check if all Spaces are Occupied,to Decide Whether the Game is Tied 
 	void checkTieGame(){
 		gameOver = true;
-		for(int r = 0; r < gridNum; r++){
-			for(int c = 0; c < gridNum; c++){
+		for(int r = 0; r < GRID_NUM; r++){
+			for(int c = 0; c < GRID_NUM; c++){
 				if(spaces[r][c]==EMPTY){
 					gameOver = false;
 				}
@@ -442,10 +436,10 @@ public class TicTacToe {
 
 	//Check if Any Columns are Occupied by One Player, and Call them the Winner if so
 	void checkColumns(){
-		for(int c = 0; c < gridNum; c++){
+		for(int c = 0; c < GRID_NUM; c++){
 			int sum = 0;
 			//Player 1's spaces have a value of 1, Player 2's have a value of -1.
-			for(int i = 0; i<gridNum; i++){
+			for(int i = 0; i<GRID_NUM; i++){
 				sum += spaces[i][c];
 			}
 			//Three of P1's in a row will total gridNum, -gridNum for P2. 
@@ -463,10 +457,10 @@ public class TicTacToe {
 
 	//Check if Any Rows are Occupied by One Player, and Call them the Winner if so
 	void checkRows(){
-		for(int r = 0; r < gridNum; r++){
+		for(int r = 0; r < GRID_NUM; r++){
 			int sum = 0;
 			//Player 1's spaces have a value of 1, Player 2's have a value of -1.
-			for(int i = 0; i<gridNum; i++){
+			for(int i = 0; i<GRID_NUM; i++){
 				sum += spaces[r][i];
 			}
 			//Three of P1's in a row will total gridNum, -gridNum for P2. 
@@ -487,7 +481,7 @@ public class TicTacToe {
 		//Top to bottom
 		int sum = 0;
 		//Player 1's spaces have a value of 1, Player 2's have a value of -1.
-		for(int i = 0; i<gridNum; i++) {
+		for(int i = 0; i<GRID_NUM; i++) {
 			sum += spaces[i][i];
 		}
 		//Three of P1's in a row will total gridNum, -gridNum for P2.
@@ -503,8 +497,8 @@ public class TicTacToe {
 		//Bottom to top
 		sum = 0;
 		//Player 1's spaces have a value of 1, Player 2's have a value of -1.
-		for(int i = 0; i<gridNum; i++) {
-			sum += spaces[i][gridNum-1-i];
+		for(int i = 0; i<GRID_NUM; i++) {
+			sum += spaces[i][GRID_NUM-1-i];
 		}
 		//Three of P1's in a row will total gridNum, -gridNum for P2.
 		if(sum == XSPACE*3){
@@ -520,10 +514,10 @@ public class TicTacToe {
 
 	//Player Interaction with the Game
 	void play(){
-		for(int row = 0; row < gridNum; row++){
-			for(int column = 0; column < gridNum; column++){
+		for(int row = 0; row < GRID_NUM; row++){
+			for(int column = 0; column < GRID_NUM; column++){
 				int s = spaces[row][column];
-				Rectangle rect = new Rectangle(100+(int)offset+(gridSize*column), 100+(int)offset+(gridSize*row), gridSize, gridSize);
+				Rectangle rect = new Rectangle(100+(int)OFFSET+(GRID_SIZE*column), 100+(int)OFFSET+(GRID_SIZE*row), GRID_SIZE, GRID_SIZE);
 				if(rect.contains(m)&&gc.getMouseClick()>0&&!gc.isMouseMoved()){
 					//Check if space is taken
 					if(s == EMPTY){
@@ -571,8 +565,8 @@ public class TicTacToe {
 			//Reset Winner
 			winner = 0;
 			//Reset Each Space
-			for(int row = 0; row < gridNum; row++){
-				for(int column = 0; column < gridNum; column++){
+			for(int row = 0; row < GRID_NUM; row++){
+				for(int column = 0; column < GRID_NUM; column++){
 					spaces[row][column] = EMPTY;
 				}
 			}
