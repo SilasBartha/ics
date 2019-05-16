@@ -21,7 +21,7 @@ public class LightsOut {
 	 */
 	
 	//Constants to determine board size, tile size, and the size of the window
-	static final int BOARD_SIZE = 150;
+	int BOARD_SIZE = 150;
 	static final int SQUARE_SIZE = 50;
 	static final int OFFSET = 75;
 	
@@ -67,7 +67,7 @@ public class LightsOut {
 				x = ((gc.getMouseX()-OFFSET)/SQUARE_SIZE);
 				y = ((gc.getMouseY()-OFFSET)/SQUARE_SIZE);
 				//If Mouse is on the Board
-				if(gc.getMouseX()>OFFSET&&gc.getMouseY()>OFFSET&&x>=0&&x<=lights[0].length-1&&y>=0&&y<=lights[2].length-1) {
+				if(mouseOnBoard()) {
 					//Increase Turn Count
 					turns++;
 					//Toggle Self
@@ -105,10 +105,14 @@ public class LightsOut {
 	//Set Up Game
 	void setup(){
 		//Window
+		gc.setLocationRelativeTo(null);
 		gc.setAntiAlias(true);
+		gc.setBackgroundColor(Color.LIGHT_GRAY);
+		gc.clear();
 		//Mouse
 		gc.enableMouse();
 		gc.enableMouseMotion();
+		gc.setFont(fnt);
 		//Game
 		resetGame();
 	}
@@ -119,17 +123,18 @@ public class LightsOut {
 			//Refresh Screen
 			gc.clear();
 			
-			//Set Font and Draw Button
-			gc.setFont(fnt);
+			//Draw Button
 			resetButton.draw(fnt, gc, "Reset", Color.BLACK, Color.WHITE, 50, 25, 5, true, true);
 			
 			//Draw Unlit Squares
-			gc.setColor(Color.DARK_GRAY);
 			for(int row = 0; row < lights[1].length; row++){
 				for(int col = 0; col < lights[0].length; col++){
 					if(!lights[row][col]){
-						gc.fillRect(SQUARE_SIZE*col+OFFSET, SQUARE_SIZE*row+OFFSET, SQUARE_SIZE, SQUARE_SIZE);
+						gc.setColor(Color.DARK_GRAY);
+					}else{
+						gc.setColor(Color.WHITE);
 					}
+					gc.fillRect(SQUARE_SIZE*col+OFFSET, SQUARE_SIZE*row+OFFSET, SQUARE_SIZE, SQUARE_SIZE);
 				}
 			}	
 			
@@ -147,7 +152,7 @@ public class LightsOut {
 			
 			//Congratulate Player
 			if(won){
-				gc.setColor(Color.GREEN);
+				gc.setColor(Color.RED);
 				gc.drawCenteredString("You Win!",200,OFFSET+(SQUARE_SIZE*lights[1].length+50),fnt);
 			}
 			
@@ -173,8 +178,12 @@ public class LightsOut {
 			}
 		}
 	}
+	
+	boolean mouseOnBoard(){
+		return(gc.getMouseX()>OFFSET&&gc.getMouseY()>OFFSET&&x>=0&&x<=lights[0].length-1&&y>=0&&y<=lights[2].length-1);
+	}
+	
 }
-
 
 /*------------------------------
  * 		Custom Button Class
