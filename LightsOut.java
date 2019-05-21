@@ -24,6 +24,7 @@ public class LightsOut {
 	int BOARD_SIZE = 150;
 	static final int SQUARE_SIZE = 50;
 	static final int OFFSET = 75;
+        static final int GRID =BOARD_SIZE/SQUARE_SIZE;
 	
 	//Mouse Position
 	int x, y;
@@ -35,7 +36,7 @@ public class LightsOut {
 	boolean won = false;
 	
 	//Array of squares on board
-	boolean[][] lights = new boolean[BOARD_SIZE/SQUARE_SIZE][BOARD_SIZE/SQUARE_SIZE];
+	boolean[][] lights = new boolean[GRID][GRID];
 	//Window
 	GraphicsConsole gc = new GraphicsConsole(BOARD_SIZE+OFFSET*2, BOARD_SIZE+OFFSET*2, "Lights Out");
 	//Reset Button
@@ -127,8 +128,8 @@ public class LightsOut {
 			resetButton.draw(fnt, gc, "Reset", Color.BLACK, Color.WHITE, 50, 25, 5, true, true);
 			
 			//Draw Unlit Squares
-			for(int row = 0; row < lights[1].length; row++){
-				for(int col = 0; col < lights[0].length; col++){
+			for(int row = 0; row < GRID; row++){
+				for(int col = 0; col < GRID; col++){
 					if(!lights[row][col]){
 						gc.setColor(Color.DARK_GRAY);
 					}else{
@@ -143,17 +144,17 @@ public class LightsOut {
 			gc.drawCenteredString("Turn #: " + turns,200,50,fnt);
 			
 			//Draw Gridlines
-			for(int row = 0; row <= lights[1].length; row++){
+			for(int row = 0; row <= GRID; row++){
 				gc.drawLine(OFFSET, SQUARE_SIZE*row+OFFSET, BOARD_SIZE+OFFSET, SQUARE_SIZE*row+OFFSET);
 			}
-			for(int col = 0; col <= lights[0].length; col++){
+			for(int col = 0; col <= GRID; col++){
 				gc.drawLine(SQUARE_SIZE*col+OFFSET, OFFSET, SQUARE_SIZE*col+OFFSET, BOARD_SIZE+OFFSET);
 			}
 			
 			//Congratulate Player
 			if(won){
 				gc.setColor(Color.RED);
-				gc.drawCenteredString("You Win!",200,OFFSET+(SQUARE_SIZE*lights[1].length+50),fnt);
+				gc.drawCenteredString("You Win!",200,OFFSET+(SQUARE_SIZE*GRID+50),fnt);
 			}
 			
 		}
@@ -167,8 +168,8 @@ public class LightsOut {
 		//Set Won to False
 		won = false;
 		//Randomize Board
-		for(int row = 0; row < lights[1].length; row++){
-			for(int col = 0; col < lights[0].length; col++){
+		for(int row = 0; row < GRID; row++){
+			for(int col = 0; col < GRID; col++){
 				//1 in 5 Chance a Light is Burnt Out
 				if((int)(Math.random()*5+1)==5){
 					lights[col][row] = false;
@@ -180,7 +181,7 @@ public class LightsOut {
 	}
 	
 	boolean mouseOnBoard(){
-		return(gc.getMouseX()>OFFSET&&gc.getMouseY()>OFFSET&&x>=0&&x<=lights[0].length-1&&y>=0&&y<=lights[2].length-1);
+		return(gc.getMouseX()>OFFSET&&gc.getMouseY()>OFFSET&&x>=0&&x<=GRID-1&&y>=0&&y<=GRID-1);
 	}
 	
 }
