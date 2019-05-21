@@ -74,8 +74,8 @@ public class Array_nums {
 	//Get sum of all parts in an integer array
 	static int arraySum(int[] myArray){
 		int sum=0;
-		for(int i:myArray){
-			sum+=i;
+		for(int part:myArray){
+			sum+=part;
 		}
 		return sum;
 	}
