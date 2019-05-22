@@ -74,22 +74,10 @@ public class LightsOut {
 					//Toggle Self
 					lights[y][x] ^= true;
 					//Attempt to Toggle Adjacent Squares
-					try{	
-						lights[y][x+1] ^= true;
-					}catch(ArrayIndexOutOfBoundsException e){
-					}
-					try{	
-						lights[y][x-1] ^= true;
-					}catch(ArrayIndexOutOfBoundsException e){
-					}
-					try{	
-						lights[y-1][x] ^= true;
-					}catch(ArrayIndexOutOfBoundsException e){
-					}
-					try{	
-						lights[y+1][x] ^= true;
-					}catch(ArrayIndexOutOfBoundsException e){
-					}
+					if(x+1<lights[1].length) lights[y][x+1] ^= true;
+					if(x-1>0) lights[y][x-1] ^= true;
+					if(y-1>0) lights[y-1][x] ^= true;
+					if(y+1<lights[0].length)lights[y+1][x] ^= true;
 					//Check if Game is Won
 					won = true;
 					//If Any Square is Lit, Player has Not Won
