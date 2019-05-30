@@ -1,18 +1,45 @@
 package game;
 
 import java.awt.Color;
-import java.awt.Point;
-import java.awt.Rectangle;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import hsa2x.GraphicsConsole;
 
-@SuppressWarnings("serial")
 public class TheCalm {
 	
 	GraphicsConsole gc = new GraphicsConsole(640,480,"The Calm.");
-	Player player = new Player();
-	ArrayList<Monster> monsters = new ArrayList<Monster>();
+	Player player = new Player(gc);
+	static ArrayList<Monster> monsters = new ArrayList<Monster>();
+	Timer monsterSpawnTimer = new Timer();
+	TimerTask monsterSpawnTask = new monsterSpawn();
+	Timer monsterNumTimer = new Timer();
+	TimerTask monsterNumTask = new monsterNumber();
+	Iterator<Bullet> bi = player.getBullets().iterator();
+	Iterator<Monster> mi = monsters.iterator();
+	
+	int monsterNum = 1;
+	
+	private class monsterSpawn  extends TimerTask{
+		public void run(){
+			for(int i = 0; i < monsterNum; i++) {
+				int x  = (int)((Math.random()*640)+1);
+				int y  = (int)((Math.random()*480)+1);
+				Monster m = new Monster(x, y, player, gc, (int)(Math.random()*2));
+				monsters.add(m);
+			}
+		}
+	}
+	
+	private class monsterNumber  extends TimerTask{
+		public void run(){
+			monsterNum++;
+		}
+	}
 	
 	public static void main(String[] args) {
 		new TheCalm();
@@ -22,7 +49,10 @@ public class TheCalm {
 		setup();
 		while(true){
 			step();
-			draw();
+			synchronized(gc){
+				draw();
+				drawGUI();
+			}
 		}
 	}
 	
@@ -30,102 +60,80 @@ public class TheCalm {
 		//Graphics
 		gc.setBackgroundColor(Color.GREEN.darker());
 		gc.clear();
+		gc.enableMouse();
+		gc.enableMouseMotion();
 		//Monsters
-		for(int i = 0; i < 3; i++){
-			int x  = (int)((Math.random()*640)+1);
-			int y  = (int)((Math.random()*480)+1);
-			Monster m = new Monster(x,y);
-			monsters.add(m);
-		}
+		monsterSpawnTimer.schedule(monsterSpawnTask, 0, 5000);
+		monsterNumTimer.schedule(monsterNumTask, 5000, 10000);
 	}
 	
 	void step(){
-		player.move();
-		for(Monster m : monsters){
+
+		Collections.sort(monsters, Comparator.comparing(Monster::getY));
+		mi = monsters.iterator();
+		while(mi.hasNext()){
+			Monster m = mi.next();
 			m.seek();
 			m.move();
+		}
+
+		bi = player.getBullets().iterator();
+		while(bi.hasNext()){
+			Bullet b = bi.next();
+			b.move();
+		}
+		
+		player.input();
+		bi = player.getBullets().iterator();
+		while(bi.hasNext()){
+			Bullet b = bi.next();
+			if(!gc.contains((int)b.x,(int)b.y)){
+				bi.remove();
+			}
+			
+		}
+		mi = monsters.iterator();
+		while(mi.hasNext()){
+			Monster m = mi.next();
+			bi = player.getBullets().iterator();
+			boolean removeM = false;
+			while(bi.hasNext()){
+				Bullet b = bi.next();
+				if(m.contains(b.getCenterX(),b.getCenterY())){
+					m.hurt(b);
+					bi.remove();
+					m.hp--;
+					if(m.hp<=0){
+						removeM = true;
+					}
+				}
+			}
+			if(removeM) {
+				mi.remove();
+			}
 		}
 	}
 	
 	void draw(){
-		synchronized(gc){
-			gc.clear();
-			player.draw();
-			for(Monster m : monsters){
-				m.draw();
-			}
+		gc.clear();
+		player.draw();
+		bi = player.getBullets().iterator();
+		while(bi.hasNext()){
+			Bullet b = bi.next();
+			b.draw();
+		}
+		mi = monsters.iterator();
+		while(mi.hasNext()){
+			Monster m = mi.next();
+			m.draw();
+		}
+	}
+	void drawGUI(){
+		mi = monsters.iterator();
+		while(mi.hasNext()){
+			Monster m = mi.next();
+			m.drawGUI();
 		}
 		gc.sleep(10);
-	}
-	
-	private class Player extends Rectangle{
-		double hp = 100;
-		double v = 2;
-		int dx = 0, dy = 0;
-		
-		Player(){
-			x = gc.getDrawWidth()/2-16;
-			y = gc.getDrawHeight()/2-16;
-			width = 32;
-			height = 32;
-		}
-		
-		void move(){
-			dx=dy=0;
-			if(gc.isFocused()){
-				if(keyDown('W')){
-					dy--;
-				}
-				if(keyDown('S')){
-					dy++;
-				}
-				if(keyDown('A')){
-					dx--;
-				}
-				if(keyDown('D')){
-					dx++;
-				}
-			}
-			x += dx*v;
-			y += dy*v;
-			
-		}
-		
-		void draw(){
-			gc.setColor(Color.DARK_GRAY);
-			gc.fillRect(x, y, width, height);
-		}
-	}
-	
-	private class Monster extends Rectangle{
-		
-		Point target = new Point(player.x,player.y);
-		
-		Monster(int x, int y){
-			this.x = x;
-			this.y = y;
-			width = 32;
-			height = 32;
-		}
-		
-		void draw(){
-			gc.setColor(new Color(100,0,100));
-			gc.fillRect(x, y, width, height);
-		}
-		
-		void seek(){
-			if(Math.random()<=.10){
-				target = new Point(player.x,player.y);
-			}
-		}
-		
-		void move(){
-			x+=(int)-Math.signum(x-target.x);
-			y+=(int)-Math.signum(y-target.y);
-		}
-	}
-	
-	boolean keyDown(char key){
-		return gc.isKeyDown(key);
 	}
 }
