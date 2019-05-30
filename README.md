@@ -2,4 +2,5 @@
 Computer Science Coursework
 Just some java code written
 during my highschool compsci
-courses.
+courses. You can do whatever 
+you want with them.
